@@ -1,0 +1,27 @@
+{
+  "name": "automedic",
+  "version": "1.0.0",
+  "description": "Graduation Project",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "SET NODE_ENV=development&&nodemon server.js",
+    "prod": "SET NODE_ENV=production&&nodemon server.js"
+  },
+  "author": "isgi",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.10.0",
+    "nodemailer": "^6.10.0",
+    "validator": "^13.12.0"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.7",
+    "morgan": "^1.10.0",
+    "nodemon": "^3.1.9"
+  }
+}
