@@ -20,6 +20,7 @@ const signup = catchAsync(async (req, res, next) => {
     passwordChangedAt: req.body.passwordChangedAt,
     role: req.body.role,
     patients: req.body.patients,
+    doctorId: req.body.doctorId,
   });
 
   //2) Create the Token for the New User
