@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcrypt';
 
-
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -34,6 +33,7 @@ const userSchema = new mongoose.Schema({
       message: 'Passwords do not match',
     },
   },
+  passwordChangedAt: Date,
   role: {
     type: String,
     enum: ['user', 'patient', 'doctor'],
@@ -58,17 +58,16 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.pre('save', async function (next) {
-  //1) Onry this function if the Password is Modified
+  // Only run this function if password was modified
   if (!this.isModified('password')) return next();
-  //2) Hash the Password
+  // Hash the password with cost of 10
   this.password = await bcrypt.hash(this.password, 10);
-  //3) Set The passwordChangedAt if password is Modified
-  if (!this.isModified) {
-    this.passwordChangedAt = Date.now() - 1000;
-    // Delete passwordConfirm field
-    this.passwordConfirm = undefined;
-    next();
-  }
+  // Set passwordChangedAt if password is modified (not on new document)
+  if (!this.isModified('password') || this.isNew) return next();
+  this.passwordChangedAt = Date.now() - 1000;
+  // Delete passwordConfirm field
+  this.passwordConfirm = undefined;
+  next();
 });
 
 userSchema.methods.correctPassword = async function (
