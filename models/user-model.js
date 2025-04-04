@@ -1,16 +1,43 @@
 import mongoose from 'mongoose';
-import validator from 'validator';
+import validator, { trim } from 'validator';
 import bcrypt from 'bcrypt';
 
 const userSchema = new mongoose.Schema({
-  name: {
+  firstName: {
     type: String,
-    required: [true, 'A user must have a name'],
+    required: [true, 'User must enter his name'],
     trim: true,
+  },
+  lastName: {
+    type: String,
+    required: true,
+  },
+  phoneNumber: {
+    type: String,
+  },
+  dateOfBirth: {
+    type: Date,
+    default: Date.now(),
+  },
+  address: {
+    street: String,
+    city: String,
+    state: String,
+    zipCode: String,
+    country: String,
+  },
+  role: {
+    type: String,
+    enum: ['user', 'patient', 'doctor'],
+    default: 'user',
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now(),
   },
   email: {
     type: String,
-    required: [true, 'A user must have an email'],
+    required: [true, 'User must have an email'],
     unique: true,
     lowercase: true,
     trim: true,
@@ -18,14 +45,14 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'A user must have a password'],
+    required: [true, 'User must have a Password'],
     trim: true,
     minlength: 8,
     select: false,
   },
   passwordConfirm: {
     type: String,
-    required: [true, 'A user must confirm password'],
+    required: [true, 'User must confirm password'],
     validate: {
       validator: function (val) {
         return val === this.password;
@@ -34,27 +61,55 @@ const userSchema = new mongoose.Schema({
     },
   },
   passwordChangedAt: Date,
-  role: {
-    type: String,
-    enum: ['user', 'patient', 'doctor'],
-    default: 'user',
+  active: {
+    type: Boolean,
+    default: true,
   },
 
-  // ------------------------------------------ Specified for Patient ------------------------------------------
-  doctorId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    default: null, // Links patient to a doctor
-  },
-
-  // ------------------------------------------ Specified for Doctors ------------------------------------------
-  patients: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      default: null,
+  /**
+   * ***************************************************** Doctor Specific Fileds *****************************************************
+   */
+  doctorInfo: {
+    type: {
+      specialty: {
+        type: String,
+        required: function () {
+          return this.role === 'doctor';
+        },
+      },
+      hospital: String,
+      patients: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: 'User',
+        },
+      ],
     },
-  ],
+    required: function () {
+      return this.role === 'doctor';
+    },
+  },
+
+  /**
+   * ***************************************************** Doctor Specific Fileds *****************************************************
+   */
+  patientInfo: {
+    type: {
+      medicalHistory: String,
+      primaryDoctor: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+      emergencyContact: {
+        name: String,
+        relationship: String,
+        phoneNumber: String,
+      },
+    },
+    required: function () {
+      return this.role === 'patient';
+    },
+  },
 });
 
 userSchema.pre('save', async function (next) {
