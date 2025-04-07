@@ -1,6 +1,6 @@
 import express from 'express';
 import OximeterData from '../models/oximeter-model.js';
-import { protect } from '../middlewares/authMiddleware.js';
+import { protect } from '../middlewares/auth-middleware.js';
 import {
   getOximeterData,
   addOximeterData,
