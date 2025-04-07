@@ -1,8 +1,8 @@
 import EcgData from '../models/ecg-model.js';
 import User from '../models/user-model.js';
 import mongoose from 'mongoose';
-import catchAsync from '../utils/catchAsync.js';
-import AppError from '../utils/appError.js';
+import catchAsync from '../utils/catch-async.js';
+import AppError from '../utils/app-error.js';
 
 export const getECGData = catchAsync(async (req, res, next) => {
   const user = req.user;
