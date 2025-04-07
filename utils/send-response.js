@@ -1,4 +1,4 @@
-const sendRespose = (res, statusCode, data) => {
+const sendResponse = (res, statusCode, data) => {
   res.status(statusCode).json({
     status: success,
     data: {
@@ -7,4 +7,4 @@ const sendRespose = (res, statusCode, data) => {
   });
 };
 
-export default sendRespose;
+export default sendResponse;
