@@ -12,7 +12,7 @@ dotenv.config();
 app.use(express.json());
 app.use(morgan('dev'));
 
-app.use('/api/v1/user', usersRoutes);
+app.use('/api/v1/users', usersRoutes);
 app.use('/api/v1/ecg', ecgRoute);
 app.use('/api/v1/oximeter', oximeterRoute);
 
