@@ -1,5 +1,5 @@
-import mongoose from 'mongoose';
-import validator, { trim } from 'validator';
+import mongoose, { mongo } from 'mongoose';
+import validator from 'validator';
 import bcrypt from 'bcrypt';
 
 const userSchema = new mongoose.Schema({
@@ -59,6 +59,9 @@ const userSchema = new mongoose.Schema({
       },
       message: 'Passwords do not match',
     },
+    required: function () {
+      return this.isNew;
+    },
   },
   passwordChangedAt: Date,
   active: {
@@ -80,7 +83,7 @@ const userSchema = new mongoose.Schema({
       hospital: String,
       patients: [
         {
-          type: Schema.Types.ObjectId,
+          type: mongoose.Schema.Types.ObjectId,
           ref: 'User',
         },
       ],
@@ -97,7 +100,7 @@ const userSchema = new mongoose.Schema({
     type: {
       medicalHistory: String,
       primaryDoctor: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
       },
       emergencyContact: {
@@ -118,8 +121,7 @@ userSchema.pre('save', async function (next) {
   // Hash the password with cost of 10
   this.password = await bcrypt.hash(this.password, 10);
   // Set passwordChangedAt if password is modified (not on new document)
-  if (!this.isModified('password') || this.isNew) return next();
-  this.passwordChangedAt = Date.now() - 1000;
+  if (!this.isNew) this.passwordChangedAt = Date.now() - 1000;
   // Delete passwordConfirm field
   this.passwordConfirm = undefined;
   next();
