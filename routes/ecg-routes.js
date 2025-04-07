@@ -1,6 +1,6 @@
 import express from 'express';
 import EcgData from '../models/ecg-model.js';
-import { protect } from '../middlewares/authMiddleware.js';
+import { protect } from '../middlewares/auth-middleware.js';
 import { getECGData, addEcgData } from '../controllers/ecg-controller.js';
 
 const ecgRoute = express.Router();
