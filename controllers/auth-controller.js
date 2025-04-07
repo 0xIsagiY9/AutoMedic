@@ -1,30 +1,42 @@
 import User from '../models/user-model.js';
-import catchAsync from '../utils/catchAsync.js';
-import jwt from 'jsonwebtoken';
-import AppError from '../utils/appError.js';
-import { promisify } from 'util';
-
-const getToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
-  });
-};
+import catchAsync from '../utils/catch-async.js';
+import AppError from '../utils/app-error.js';
+import createToken from '../utils/create-token.js';
 
 const signup = catchAsync(async (req, res, next) => {
   //1) Create the New User
-  const newUser = await User.create({
-    name: req.body.name,
+  const userData = {
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+    phoneNumber: req.body.phoneNumber,
+    dateOfBirth: req.body.dateOfBirth,
+    address: req.body.address,
+    role: req.body.role,
+    createdAt: req.body.createdAt,
     email: req.body.email,
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
-    passwordChangedAt: req.body.passwordChangedAt,
-    role: req.body.role,
-    patients: req.body.patients,
-    doctorId: req.body.doctorId,
-  });
+    role: req.body.role || 'user',
+  };
+
+  if (userData.role === 'doctor' && req.body.doctorInfo) {
+    userData.doctorInfo = {
+      specialty: req.body.doctorInfo.specialty,
+      hospital: req.body.doctorInfo.hospital,
+    };
+  } else if (userData.role === 'patient' && req.body.patientInfo) {
+    userData.patientInfo = {
+      medicalHistory: req.body.patientInfo.medicalHistory,
+      emergencyContact: req.body.patientInfo.emergencyContact,
+    };
+    if (req.body.patientInfo.primaryDoctor)
+      userData.patientInfo.primaryDoctor = req.body.patientInfo.primaryDoctor;
+  }
+
+  const newUser = await User.create(userData);
 
   //2) Create the Token for the New User
-  const token = getToken(newUser._id);
+  const token = createToken(newUser._id);
   res.status(201).json({
     status: 'success',
     token,
@@ -46,7 +58,7 @@ const login = catchAsync(async (req, res, next) => {
   if (!correctPass)
     return next(new AppError('Incorrect email or password', 401));
   //3) If everythingis Ok, send token to the client
-  const token = getToken(user._id);
+  const token = createToken(user._id);
   res.status(200).json({
     status: 'success',
     token,
