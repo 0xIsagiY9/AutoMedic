@@ -28,8 +28,8 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'patient', 'doctor','admin'],
-    default: 'user',
+    enum: ['patient', 'doctor', 'admin'],
+    default: 'patient',
   },
   createdAt: {
     type: Date,
@@ -94,7 +94,7 @@ const userSchema = new mongoose.Schema({
   },
 
   /**
-   * ***************************************************** Doctor Specific Fileds *****************************************************
+   * ***************************************************** Patient Specific Fileds *****************************************************
    */
   patientInfo: {
     type: {
@@ -108,9 +108,6 @@ const userSchema = new mongoose.Schema({
         relationship: String,
         phoneNumber: String,
       },
-    },
-    required: function () {
-      return this.role === 'patient';
     },
   },
 });
