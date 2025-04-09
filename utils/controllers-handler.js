@@ -2,7 +2,6 @@ import catchAsync from './catch-async.js';
 import AppError from './app-error.js';
 import sendResponse from './send-response.js';
 import APIQuery from './api-features.js';
-import { Model } from 'mongoose';
 
 export const getAll = (Model) =>
   catchAsync(async (req, res, next) => {
