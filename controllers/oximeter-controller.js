@@ -3,57 +3,39 @@ import User from '../models/user-model.js';
 import mongoose from 'mongoose';
 import catchAsync from '../utils/catch-async.js';
 import AppError from '../utils/app-error.js';
+import sendResponse from '../utils/send-response.js';
 
-export const getOximeterData = catchAsync(async (req, res, next) => {
+export const getOximeter = catchAsync(async (req, res, next) => {
   const user = req.user;
   if (!user) return next(new AppError('There is no User', 401));
-  if (user.role == 'user') {
-    if (req.params.patientId) {
-      return next(new AppError('Access Denied', 403));
-    } else {
-      const oxiData = await OximeterData.find({ patientId: user._id });
-      if (!oxiData) return next(new AppError('There is No Data', 404));
-      return res.status(200).json({
-        status: 'success',
-        data: oxiData,
-      });
-    }
-  }
   if (user.role == 'patient') {
     const oxiData = await OximeterData.find({ patientId: user._id });
     if (!oxiData) return next(new AppError('There is No Data', 404));
-    return res.status(200).json({
-      status: 'success',
-      data: oxiData,
-    });
+    return sendResponse(res, 200, oxiData);
   }
 
   if (user.role == 'doctor') {
-    let DataOxi;
-    if (req.params.patientId) {
-      const patient = await User.findOne({
-        _id: req.params.patientId,
-        doctorId: user._id,
-      });
-      if (!patient) return next(new AppError('Access Denied', 401));
-      DataOxi = await OximeterData.find({ patientId: req.params.patientId });
+    let oxiData;
+    if (req.params.id) {
+      oxiData = await OximeterData.find({ patientId: req.params.id });
     } else {
-      const patientsIds = await User.find({ doctorId: user._id }).select('_id');
+      const patientsIds = await User.find({
+        'patientInfo.primaryDoctor': user._id,
+      }).select('_id');
       const idArray = patientsIds.map((el) => el._id);
-      DataOxi = await OximeterData.find({
+      oxiData = await OximeterData.find({
         patientId: { $in: idArray },
       });
     }
-    return res.status(200).json({
-      status: 'success',
-      data: DataOxi,
-    });
+    return sendResponse(res, 200, oxiData);
   }
   return next(new AppError('Access Denied', 403));
 });
 
-export const addOximeterData = catchAsync(async (req, res, next) => {
-  const { patientId, bloodPressure, oxygenPercentage } = req.body;
+export const addOximeter = catchAsync(async (req, res, next) => {
+  const patientId = req.params.id || req.body.patientId;
+  
+  const { bloodPressure, oxygenPercentage } = req.body;
   if (!mongoose.Types.ObjectId.isValid(patientId)) {
     return next(new AppError('Invalid Patient ID', 403));
   }
@@ -82,8 +64,6 @@ export const addOximeterData = catchAsync(async (req, res, next) => {
   });
 
   await newOximeterData.save();
-  res.status(200).json({
-    status: 'success',
-    data: newOximeterData,
-  });
+  sendResponse(res, 200, newOximeterData);
 });
+
