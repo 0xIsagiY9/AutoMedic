@@ -1,15 +1,15 @@
 import express from 'express';
-import OximeterData from '../models/oximeter-model.js';
 import { protect } from '../middlewares/auth-middleware.js';
 import {
-  getOximeterData,
-  addOximeterData,
+  getOximeter,
+  addOximeter,
 } from '../controllers/oximeter-controller.js';
 
 const oximeterRoute = express.Router();
 
-oximeterRoute.route('/').get(protect, getOximeterData);
-oximeterRoute.route('/:patientId').get(protect, getOximeterData);
-oximeterRoute.route('/add-oximeter').post(addOximeterData);
+oximeterRoute.use(protect);
+
+oximeterRoute.route('/').get(getOximeter).post(addOximeter);
+oximeterRoute.route('/:id').post(addOximeter).get(getOximeter);
 
 export default oximeterRoute;
