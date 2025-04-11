@@ -1,6 +1,6 @@
 import express from 'express';
 import { signup, login } from '../controllers/auth-controller.js';
-import { protect } from '../middlewares/auth-middleware.js';
+import { protect, isRestricted } from '../middlewares/auth-middleware.js';
 import {
   getAllUsers,
   getOneUser,
@@ -24,7 +24,10 @@ usersRoutes.use(protect);
 
 usersRoutes.route('/doctor').get(getPatients);
 usersRoutes.route('/doctor/:pid').get(getOnePatient).post(addPatient);
-usersRoutes.route('/').get(getAllUsers);
-usersRoutes.route('/:id').get(getOneUser).delete(deleteUser);
+usersRoutes.route('/').get(isRestricted(['admin']), getAllUsers);
+usersRoutes
+  .route('/:id')
+  .get(isRestricted(['admin']), getOneUser)
+  .delete(isRestricted(['admin']), deleteUser);
 
 export default usersRoutes;
