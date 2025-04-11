@@ -18,6 +18,8 @@ export const getPatients = catchAsync(async (req, res, next) => {
 
 export const getOnePatient = catchAsync(async (req, res, next) => {
   const user = req.user;
+  if (user.role == 'patient')
+    return next(new AppError('You Do not Have a permissions'), 403);
   const patientIds = user.doctorInfo.patients;
   console.log(patientIds);
   const findPatient = patientIds.find((elememt) => elememt == req.params.pid);
