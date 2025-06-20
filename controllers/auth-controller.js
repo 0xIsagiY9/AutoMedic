@@ -37,12 +37,18 @@ const signup = catchAsync(async (req, res, next) => {
 
   //2) Create the Token for the New User
   const token = createToken(newUser._id);
+  const cookiesOptions = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true,
+  };
+  cookiesOptions.secure = true;
+  res.cookie('jwt', token, cookiesOptions);
   res.status(201).json({
     status: 'success',
     token,
-    data: {
-      user: newUser,
-    },
+    user: newUser,
   });
 });
 
@@ -59,9 +65,18 @@ const login = catchAsync(async (req, res, next) => {
     return next(new AppError('Incorrect email or password', 401));
   //3) If everythingis Ok, send token to the client
   const token = createToken(user._id);
+  const cookiesOptions = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true,
+  };
+  cookiesOptions.secure = true;
+  res.cookie('jwt', token, cookiesOptions);
   res.status(200).json({
     status: 'success',
     token,
+    user,
   });
 });
 
