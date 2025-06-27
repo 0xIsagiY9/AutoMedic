@@ -12,7 +12,12 @@ export const getPatients = catchAsync(async (req, res, next) => {
   const user = req.user;
   if (user.role !== 'doctor')
     return next(new AppError('You are not a Doctor', 403));
-  const patients = user.doctorInfo.patients;
+
+  const patientIds = user.doctorInfo.patients;
+  const patients = await User.find({
+    _id: { $in: patientIds },
+  }).select('-__v -password'); // Exclude sensitive fields
+
   sendResponse(res, 200, patients);
 });
 
