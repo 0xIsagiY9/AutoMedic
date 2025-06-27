@@ -9,7 +9,10 @@ export const getOximeter = catchAsync(async (req, res, next) => {
   const user = req.user;
   if (!user) return next(new AppError('There is no User', 401));
   if (user.role == 'patient') {
-    const oxiData = await OximeterData.find({ patientId: user._id });
+    const oxiData = await OximeterData.find({ patientId: user._id }).populate(
+      'patientId',
+      '-__v -password'
+    );
     if (!oxiData) return next(new AppError('There is No Data', 404));
     return sendResponse(res, 200, oxiData);
   }
@@ -17,7 +20,10 @@ export const getOximeter = catchAsync(async (req, res, next) => {
   if (user.role == 'doctor') {
     let oxiData;
     if (req.params.id) {
-      oxiData = await OximeterData.find({ patientId: req.params.id });
+      oxiData = await OximeterData.find({ patientId: req.params.id }).populate(
+        'patientId',
+        '-__v -password'
+      );
     } else {
       const patientsIds = await User.find({
         'patientInfo.primaryDoctor': user._id,
@@ -25,7 +31,7 @@ export const getOximeter = catchAsync(async (req, res, next) => {
       const idArray = patientsIds.map((el) => el._id);
       oxiData = await OximeterData.find({
         patientId: { $in: idArray },
-      });
+      }).populate('patientId', '-__v -password');
     }
     return sendResponse(res, 200, oxiData);
   }
@@ -34,36 +40,17 @@ export const getOximeter = catchAsync(async (req, res, next) => {
 
 export const addOximeter = catchAsync(async (req, res, next) => {
   const patientId = req.params.id || req.body.patientId;
-  
-  const { bloodPressure, oxygenPercentage } = req.body;
+
+  const { oxygenPercentage, heartRate } = req.body;
   if (!mongoose.Types.ObjectId.isValid(patientId)) {
     return next(new AppError('Invalid Patient ID', 403));
   }
-  if (
-    !bloodPressure ||
-    typeof bloodPressure !== 'object' ||
-    !bloodPressure.systolic ||
-    !bloodPressure.diastolic
-  ) {
-    return next(new AppError('Invalid Blood pressure data'));
-  }
-  if (
-    typeof oxygenPercentage !== 'number' ||
-    oxygenPercentage < 0 ||
-    oxygenPercentage > 100
-  ) {
-    return next(
-      new AppError('Oxygen percentage must be between 0 and 100', 400)
-    );
-  }
-
   const newOximeterData = new OximeterData({
     patientId,
-    bloodPressure,
+    heartRate,
     oxygenPercentage,
   });
 
   await newOximeterData.save();
   sendResponse(res, 200, newOximeterData);
 });
-
