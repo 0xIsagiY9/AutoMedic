@@ -3,15 +3,12 @@ import mongoose from 'mongoose';
 const oximeterDataSchema = new mongoose.Schema({
   patientId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Patient',
+    ref: 'User', // Changed from 'Patient' to 'User'
     required: true,
   },
-  bloodPressure: {
-    systolic: {
-      type: Number,
-      required: true,
-    },
-    diastolic: { type: Number, required: true },
+  heartRate: {
+    type: Number,
+    required: true,
   },
   oxygenPercentage: {
     type: Number,
